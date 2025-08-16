@@ -21,7 +21,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t $DOCKER_IMAGE:${{ github.sha }} .
-          docker tag $DOCKER_IMAGE:${{ github.sha }} $DOCKER_IMAGE:latest
+          docker tag getting-started $DOCKER_IMAGE:latest
 
       - name: Push Docker image
         run: |

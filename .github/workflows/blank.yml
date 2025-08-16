@@ -1,36 +1,29 @@
 name: CI with Docker
 
 on:
-  workflow_dispatch:
+ workflow_dispatch
 
 env:
-  DOCKER_USERNAME: ${{ vars.DOCKER_NAME }}
-  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  DOCKER_IMAGE: santoshguggilla7/getting-started
-
+ DOCKER_USERNAME: ${{vars.DOCKER_NAME}}
+ DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+ DOCKER_IMAGE: santoshguggilla7/getting-started
 jobs:
-  build-test-docker:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+ build-using-docker:
+  runs-on: ubuntu-latest
+  steps:
+   - name: Checkout code 
+     uses: actions/checkout@v4.2.2
 
-      - name: Log in to Docker Hub
-        run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-
-      - name: Build Docker image
-        run: |
-         docker build -t getting-started -f Dockerfile .
-         docker tag $DOCKER_IMAGE:${{ github.sha }} $DOCKER_IMAGE:latest
-
-      - name: Push Docker image
-        run: |
-          docker push $DOCKER_IMAGE:${{ github.sha }}
-          docker push $DOCKER_IMAGE:latest
-
-      - name: Run Docker container
-        run: |
-          docker run -d --name getting-started -p 5000:5000 $DOCKER_IMAGE:latest
-          sleep 5
-          docker ps
-          docker logs getting-started
+   - name: Setup Kubectl
+     uses: azure/setup-kubectl@v4
+     with:
+       version: latest
+   - name: Setup Minikube
+     run: |
+      minikube start
+      kubectl config use-context minikube
+   - name: Deployment k8s
+     run: |
+      kubectl apply -f k8s/deployment.yml
+      kubectl apply -f k8s/service.yml
+      
